@@ -1,0 +1,75 @@
+name: GARUDA CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: garuda
+          POSTGRES_PASSWORD: garuda
+          POSTGRES_DB: garuda_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest httpx
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql+psycopg2://garuda:garuda@localhost:5432/garuda_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: ci-test-secret
+        run: pytest -q
+
+  build-and-push:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t garuda-api:${{ github.sha }} .
+
+      # Add registry login + push steps here (e.g. ECR, GHCR) for your environment.
+
+  train-model:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Retrain construct viability model
+        run: python -m app.ml.train
+      - uses: actions/upload-artifact@v4
+        with:
+          name: construct-viability-model
+          path: app/ml/artifacts/construct_viability_xgb.joblib

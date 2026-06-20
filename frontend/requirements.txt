@@ -1,0 +1,23 @@
+# Core dependencies required to run the API (used by run-local.sh)
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+biopython==1.84
+sqlalchemy==2.0.35
+pydantic==2.9.2
+pydantic-settings==2.5.2
+email-validator==2.2.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+python-multipart==0.0.9
+xgboost==2.1.1
+scikit-learn==1.5.2
+reportlab==4.2.2
+numpy==1.26.4
+pandas==2.2.2
+httpx==0.27.2
+alembic==1.13.2
+
+# Optional - only needed for Postgres (Docker) deployments; SQLite is used by default
+psycopg2-binary==2.9.9
+asyncpg==0.29.0

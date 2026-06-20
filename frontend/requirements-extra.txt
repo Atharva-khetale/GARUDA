@@ -1,0 +1,7 @@
+# Optional dependencies for async pipeline jobs, scheduled ETL, MLOps.
+# pip install -r requirements-extra.txt
+celery==5.4.0
+redis==5.0.8
+mlflow==2.16.0
+shap==0.46.0
+matplotlib==3.9.2

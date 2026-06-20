@@ -1,0 +1,4 @@
+node_modules/
+garuda.db
+{app/
+.env*

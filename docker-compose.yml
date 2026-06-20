@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: garuda_api
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./app:/code/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  worker:
+    build: .
+    container_name: garuda_worker
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./app:/code/app
+    command: celery -A app.worker.celery_app worker --loglevel=info
+
+  db:
+    image: postgres:16-alpine
+    container_name: garuda_db
+    environment:
+      POSTGRES_USER: garuda
+      POSTGRES_PASSWORD: garuda
+      POSTGRES_DB: garuda
+    ports:
+      - "5432:5432"
+    volumes:
+      - garuda_pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: garuda_redis
+    ports:
+      - "6379:6379"
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.16.0
+    container_name: garuda_mlflow
+    ports:
+      - "5000:5000"
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root /mlruns
+    volumes:
+      - garuda_mlruns:/mlruns
+
+  nginx:
+    image: nginx:alpine
+    container_name: garuda_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+
+volumes:
+  garuda_pgdata:
+  garuda_mlruns:
