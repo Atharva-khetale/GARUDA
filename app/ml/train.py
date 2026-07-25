@@ -65,7 +65,8 @@ def generate_training_data(n_samples: int = 1000, seed: int = 42):
         # "viable" if expression score high and rare codon density low
         cai, rare_density, expr_score = feats[1], feats[2], feats[3]
         viable_prob = 0.4 * cai + 0.3 * (1 - rare_density) + 0.3 * (expr_score / 100)
-        label = 1 if viable_prob + np.random.normal(0, 0.05) > 0.55 else 0
+        score = viable_prob + np.random.normal(0, 0.15)
+        label = 1 if score > 0.75 else 0
         y.append(label)
 
     return np.array(X), np.array(y)
