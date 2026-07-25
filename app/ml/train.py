@@ -100,9 +100,9 @@ def main():
         proba = model.predict_proba(X_test)[:, 1]
         acc = accuracy_score(y_test, preds)
         if len(np.unique(y_test)) > 1:
-    auc = roc_auc_score(y_test, proba)
-else:
-    auc = 0.5
+            auc = roc_auc_score(y_test, proba)
+        else:
+            auc = 0.5
     print("Warning: Only one class present in y_test. Using auc=0.5")
 
         mlflow.log_param("n_samples", len(X))
