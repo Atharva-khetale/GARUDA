@@ -76,7 +76,14 @@ def main():
     mlflow.set_experiment("garuda-construct-viability")
 
     X, y = generate_training_data()
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    print("Class distribution:", np.unique(y, return_counts=True))
+    X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y,
+)
 
     with mlflow.start_run(run_name="xgb-construct-viability"):
         model = XGBClassifier(
@@ -92,7 +99,11 @@ def main():
         preds = model.predict(X_test)
         proba = model.predict_proba(X_test)[:, 1]
         acc = accuracy_score(y_test, preds)
-        auc = roc_auc_score(y_test, proba)
+        if len(np.unique(y_test)) > 1:
+    auc = roc_auc_score(y_test, proba)
+else:
+    auc = 0.5
+    print("Warning: Only one class present in y_test. Using auc=0.5")
 
         mlflow.log_param("n_samples", len(X))
         mlflow.log_param("features", FEATURE_NAMES)
