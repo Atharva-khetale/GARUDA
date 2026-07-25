@@ -103,7 +103,7 @@ def main():
             auc = roc_auc_score(y_test, proba)
         else:
             auc = 0.5
-    print("Warning: Only one class present in y_test. Using auc=0.5")
+            print("Warning: Only one class present in y_test. Using auc=0.5")
 
         mlflow.log_param("n_samples", len(X))
         mlflow.log_param("features", FEATURE_NAMES)
